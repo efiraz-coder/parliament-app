@@ -290,6 +290,18 @@ export async function POST(request: NextRequest) {
         )
         .filter(Boolean)
       
+      // Convert action_plan to properly typed ActionPlanStep[]
+      const typedActionPlan = actionPlanSteps
+        .filter((step: unknown): step is { title?: string; description?: string; success_criteria?: string } => 
+          typeof step === 'object' && step !== null
+        )
+        .map(step => ({
+          title: step.title ?? '',
+          description: step.description ?? '',
+          success_criteria: step.success_criteria ?? ''
+        }))
+        .filter(step => step.title || step.description) // Remove empty steps
+
       summaryData = {
         // Map new format to old fields for backward compatibility
         mechanism: rawData.user_friendly_explanation,
@@ -302,7 +314,7 @@ export async function POST(request: NextRequest) {
         originalQuestion: rawData.original_question,
         patternName: rawData.pattern_name,
         userFriendlyExplanation: rawData.user_friendly_explanation,
-        actionPlan: rawData.action_plan,
+        actionPlan: typedActionPlan.length > 0 ? typedActionPlan : undefined,
         resistanceNote: rawData.resistance_note,
         medicalNote: rawData.medical_note,
         offerExpertView: rawData.offer_expert_view,
