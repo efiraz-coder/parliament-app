@@ -1,0 +1,68 @@
+// Prisma Schema for Parliament App Authentication
+// Database: PlanetScale (MySQL)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma" // Required for PlanetScale (no foreign keys)
+}
+
+// טבלת משתמשים
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique // גם שם המשתמש
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  otpCodes     OTPCode[]
+  sessions     Session[]
+
+  @@index([email])
+}
+
+// סוגי קודי OTP
+enum OTPType {
+  LOGIN
+  RESET_PASSWORD
+  REGISTER
+}
+
+// טבלת קודי OTP
+model OTPCode {
+  id          String   @id @default(cuid())
+  userId      String
+  code        String   // 6 ספרות
+  type        OTPType
+  expiresAt   DateTime // 5 דקות מרגע היצירה
+  used        Boolean  @default(false)
+  attempts    Int      @default(0) // מונה ניסיונות שגויים
+  maxAttempts Int      @default(3) // מקסימום ניסיונות
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([code, type])
+}
+
+// טבלת Sessions
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
