@@ -65,6 +65,23 @@ export default function Home() {
   const [showReplaceAgent, setShowReplaceAgent] = useState<Record<string, boolean>>({})
   const [replacementNames, setReplacementNames] = useState<Record<string, string>>({})
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [loggingOut, setLoggingOut] = useState(false)
+
+  // Logout function
+  const handleLogout = async () => {
+    setLoggingOut(true)
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+      // Clear local session
+      localStorage.removeItem('parliament_sessionId')
+      // Redirect to login
+      window.location.href = '/login'
+    } catch (err) {
+      console.error('Logout error:', err)
+      // Still redirect on error
+      window.location.href = '/login'
+    }
+  }
   
   // External domain state
   const [externalDomainQuestion, setExternalDomainQuestion] = useState<{
@@ -715,9 +732,35 @@ export default function Home() {
         flexDirection: 'column',
       }}
     >
-      <h1 className="app-title">
-        Parliament App
-      </h1>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '1rem'
+      }}>
+        <h1 className="app-title" style={{ margin: 0 }}>
+          Parliament App
+        </h1>
+        <button
+          type="button"
+          onClick={handleLogout}
+          disabled={loggingOut}
+          style={{
+            padding: '0.5rem 1rem',
+            fontSize: '0.9rem',
+            fontWeight: '500',
+            backgroundColor: '#dc3545',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: loggingOut ? 'not-allowed' : 'pointer',
+            opacity: loggingOut ? 0.7 : 1,
+            transition: 'background-color 0.2s'
+          }}
+        >
+          {loggingOut ? 'מתנתק...' : 'יציאה'}
+        </button>
+      </div>
 
       {/* רשימת חברי הפרלמנט */}
       <div className="parliament-container" style={{
