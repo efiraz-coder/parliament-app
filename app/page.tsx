@@ -637,125 +637,134 @@ export default function Home() {
               )}
 
               {/* Expert Insights Section - זוויות מהפרלמנט */}
-              {((chairSummary.summary.selectedExperts?.length ?? 0) > 0 || (chairSummary.summary.expertVoices?.length ?? 0) > 0 || chairSummary.summary.mechanism) && (
-                <div className="mb-6">
-                  <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2 text-lg">
-                    💡 זוויות מהפרלמנט
-                  </h4>
-                  
-                  {/* New structured expert cards */}
-                  {(chairSummary.summary.selectedExperts?.length ?? 0) > 0 ? (
-                    <div className="space-y-4">
-                      {chairSummary.summary.selectedExperts.map((expert, index) => (
-                        <motion.div
-                          key={expert.id + index}
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                        >
-                          <ExpertPill
-                            expertId={expert.id}
-                            displayName={expert.name}
-                            insight={expert.insight}
-                          />
-                        </motion.div>
-                      ))}
-                    </div>
-                  ) : (chairSummary.summary.expertVoices?.length ?? 0) > 0 ? (
-                    /* Fallback to old expertVoices format */
-                    <div className="space-y-4">
-                      {chairSummary.summary.expertVoices.map((voice: string, index: number) => (
-                        <div 
-                          key={index}
-                          className="p-4 rounded-lg bg-amber-50 border border-amber-100 border-r-4 border-r-amber-400"
-                        >
-                          <div 
-                            className="text-slate-600 leading-relaxed"
-                            dangerouslySetInnerHTML={{ 
-                              __html: voice
-                                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-800">$1</strong>')
-                                .replace(/\n/g, '<br/>') 
-                            }}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  ) : chairSummary.summary.mechanism && (
-                    /* Fallback to mechanism */
-                    <div className="p-5 rounded-lg bg-amber-50 border border-amber-100 border-l-4 border-l-amber-500">
-                      <div 
-                        className="text-slate-600 leading-relaxed prose prose-slate max-w-none"
-                        dangerouslySetInnerHTML={{ 
-                          __html: chairSummary.summary.mechanism
-                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                            .replace(/\n/g, '<br/>') 
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
+              {(() => {
+                const experts = chairSummary.summary?.selectedExperts ?? []
+                const voices = chairSummary.summary?.expertVoices ?? []
+                const mechanism = chairSummary.summary?.mechanism
+                if (experts.length === 0 && voices.length === 0 && !mechanism) return null
+                return (
+                  <div className="mb-6">
+                    <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2 text-lg">
+                      💡 זוויות מהפרלמנט
+                    </h4>
+                    {experts.length > 0 ? (
+                      <div className="space-y-4">
+                        {experts.map((expert, index) => (
+                          <motion.div
+                            key={expert.id + index}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                          >
+                            <ExpertPill
+                              expertId={expert.id}
+                              displayName={expert.name}
+                              insight={expert.insight}
+                            />
+                          </motion.div>
+                        ))}
+                      </div>
+                    ) : voices.length > 0 ? (
+                      <div className="space-y-4">
+                        {voices.map((voice: string, index: number) => (
+                          <div
+                            key={index}
+                            className="p-4 rounded-lg bg-amber-50 border border-amber-100 border-r-4 border-r-amber-400"
+                          >
+                            <div
+                              className="text-slate-600 leading-relaxed"
+                              dangerouslySetInnerHTML={{
+                                __html: voice
+                                  .replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-800">$1</strong>')
+                                  .replace(/\n/g, '<br/>'),
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : mechanism ? (
+                      <div className="p-5 rounded-lg bg-amber-50 border border-amber-100 border-l-4 border-l-amber-500">
+                        <div
+                          className="text-slate-600 leading-relaxed prose prose-slate max-w-none"
+                          dangerouslySetInnerHTML={{
+                            __html: mechanism
+                              .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                              .replace(/\n/g, '<br/>'),
+                          }}
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                )
+              })()}
 
               {/* Action Plan Section (supports both legacy steps[] and new actionPlan[]) */}
-              {((chairSummary.summary.actionPlan?.length ?? 0) > 0 || (chairSummary.summary.steps?.length ?? 0) > 0) && (
-                <div className="mb-6 p-5 bg-emerald-50 rounded-lg border-l-4 border-l-emerald-500 border border-emerald-100">
-                  <h4 className="font-semibold text-slate-700 mb-5 flex items-center gap-2 text-lg">
-                    🎯 כלים לפעולה
-                  </h4>
-                  <ol className="space-y-6">
-                    {(chairSummary.summary.actionPlan?.length ?? 0) > 0
-                      ? chairSummary.summary.actionPlan.map((step, index) => (
-                          <li key={index} className="flex gap-4">
-                            <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#1E293B] text-white text-sm font-bold flex items-center justify-center mt-0.5">
-                              {index + 1}
-                            </span>
-                            <div className="flex-1">
-                              <h5 className="font-semibold text-slate-800 mb-1">{step.title}</h5>
-                              <div
-                                className="text-slate-700 leading-relaxed"
-                                dangerouslySetInnerHTML={{
-                                  __html: step.description.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900">$1</strong>').replace(/\n/g, '<br/>'),
-                                }}
-                              />
-                              {step.success_criteria && (
-                                <div className="mt-2 text-sm text-emerald-700 bg-emerald-100/50 px-3 py-1.5 rounded-md inline-block">
-                                  <span className="font-semibold">קריטריון:</span> {step.success_criteria}
-                                </div>
-                              )}
-                            </div>
-                          </li>
-                        ))
-                      : (chairSummary.summary.steps ?? []).map((step: string, index: number) => {
-                          const criterionMatch = step.match(/\(קריטריון[:\s]*([^)]+)\)/i)
-                          const mainText = criterionMatch ? step.replace(/\(קריטריון[:\s]*[^)]+\)/i, '').trim() : step
-                          const criterion = criterionMatch?.[1]?.trim()
-                          return (
+              {(() => {
+                const plan = chairSummary.summary?.actionPlan ?? []
+                const steps = chairSummary.summary?.steps ?? []
+                if (plan.length === 0 && steps.length === 0) return null
+                return (
+                  <div className="mb-6 p-5 bg-emerald-50 rounded-lg border-l-4 border-l-emerald-500 border border-emerald-100">
+                    <h4 className="font-semibold text-slate-700 mb-5 flex items-center gap-2 text-lg">
+                      🎯 כלים לפעולה
+                    </h4>
+                    <ol className="space-y-6">
+                      {plan.length > 0
+                        ? plan.map((step, index) => (
                             <li key={index} className="flex gap-4">
                               <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#1E293B] text-white text-sm font-bold flex items-center justify-center mt-0.5">
                                 {index + 1}
                               </span>
                               <div className="flex-1">
+                                <h5 className="font-semibold text-slate-800 mb-1">{step.title}</h5>
                                 <div
-                                  className="text-slate-700 leading-relaxed font-medium"
+                                  className="text-slate-700 leading-relaxed"
                                   dangerouslySetInnerHTML={{
-                                    __html: mainText
+                                    __html: step.description
                                       .replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900">$1</strong>')
-                                      .replace(/^([^:]+):/, '<strong class="text-slate-900">$1:</strong>')
                                       .replace(/\n/g, '<br/>'),
                                   }}
                                 />
-                                {criterion && (
+                                {step.success_criteria && (
                                   <div className="mt-2 text-sm text-emerald-700 bg-emerald-100/50 px-3 py-1.5 rounded-md inline-block">
-                                    <span className="font-semibold">קריטריון:</span> {criterion}
+                                    <span className="font-semibold">קריטריון:</span> {step.success_criteria}
                                   </div>
                                 )}
                               </div>
                             </li>
-                          )
-                        })}
-                  </ol>
-                </div>
-              )}
+                          ))
+                        : steps.map((step: string, index: number) => {
+                            const criterionMatch = step.match(/\(קריטריון[:\s]*([^)]+)\)/i)
+                            const mainText = criterionMatch ? step.replace(/\(קריטריון[:\s]*[^)]+\)/i, '').trim() : step
+                            const criterion = criterionMatch?.[1]?.trim()
+                            return (
+                              <li key={index} className="flex gap-4">
+                                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#1E293B] text-white text-sm font-bold flex items-center justify-center mt-0.5">
+                                  {index + 1}
+                                </span>
+                                <div className="flex-1">
+                                  <div
+                                    className="text-slate-700 leading-relaxed font-medium"
+                                    dangerouslySetInnerHTML={{
+                                      __html: mainText
+                                        .replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900">$1</strong>')
+                                        .replace(/^([^:]+):/, '<strong class="text-slate-900">$1:</strong>')
+                                        .replace(/\n/g, '<br/>'),
+                                    }}
+                                  />
+                                  {criterion && (
+                                    <div className="mt-2 text-sm text-emerald-700 bg-emerald-100/50 px-3 py-1.5 rounded-md inline-block">
+                                      <span className="font-semibold">קריטריון:</span> {criterion}
+                                    </div>
+                                  )}
+                                </div>
+                              </li>
+                            )
+                          })}
+                    </ol>
+                  </div>
+                )
+              })()}
 
               <motion.button
                 onClick={handleNewSession}
