@@ -505,12 +505,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error))
     console.error('Error in chair-summary API:', err.message, err.stack)
-    let userMessage = 'שגיאה בעיבוד סיכום היו"ר. נסה שוב.'
-    if (err.message?.includes('OPENAI_API_KEY')) userMessage = 'חסר מפתח API. בדוק .env.local'
-    else if (err.message?.includes('לא התקבלה תגובה') || err.message?.includes('תגובה לא תקינה')) userMessage = err.message
-    else if (err.message) userMessage = `${userMessage} (${err.message})`
     return NextResponse.json(
-      { error: userMessage },
+      { 
+        error: `שגיאה: ${err.message}`,
+        _debug: { name: err.name, stack: err.stack?.slice(0, 500) }
+      },
       { status: 500 }
     )
   }
