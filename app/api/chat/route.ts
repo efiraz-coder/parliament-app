@@ -13,14 +13,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { sessionId, userMessage, startFresh } = body
 
-    console.log('[Chat API] Request received:', {
-      hasSessionId: !!sessionId,
-      sessionIdType: typeof sessionId,
-      hasUserMessage: !!userMessage,
-      userMessageType: typeof userMessage,
-      userMessageLength: userMessage?.length || 0
-    })
-
     if (!sessionId || !userMessage || typeof sessionId !== 'string' || typeof userMessage !== 'string') {
       console.error('[Chat API] Validation failed:', {
         sessionId: sessionId ? 'present' : 'missing',
@@ -34,22 +26,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create/get session from shared process-level singleton store
     let session = getOrCreateSession(sessionId)
-    console.log(`[Chat API] Using chatStore, storeId: ${chatStore.storeId}, sessions: ${chatStore.getSessionCount()}, session exists: ${!!session}`)
 
-    // startFresh: כשהמשתמש שולח מהתיבה הראשונית (לאחר רענון או תחילת שיחה) – מנקים את הסשן כדי להבטיח מעבר לשאלות פתוחות (fixed-q1)
     if (startFresh === true) {
       clearSession(sessionId)
       session = getOrCreateSession(sessionId)
-      console.log(`[Chat API] startFresh: cleared session ${sessionId}, will return fixed-q1 after adding message`)
     }
 
-    // אם השיחה הסתיימה (final_response) והמשתמש שולח הודעה חדשה – מתחילים שיחה חדשה עם אותו sessionId (איפוס הסשן)
     const currentPhase = getPhase(sessionId)
-    console.log(`[Chat API] Current phase: ${currentPhase}`)
     if (currentPhase === 'final_response') {
-      console.log(`[Chat API] Session ${sessionId} was ended; resetting for new conversation`)
       clearSession(sessionId)
       getOrCreateSession(sessionId) // יוצר סשן ריק חדש עם אותו מזהה
     }
@@ -67,23 +52,16 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString()
     }
     addMessage(sessionId, userChatMessage)
-    console.log(`[Chat API] Stored user message for sessionId: ${sessionId}`)
 
-    // כלל זהב: שמירת שאלת המקור - הבעיה במילים של המשתמש
-    // This is the first message, so we use it as the source question
     const existingSourceQuestion = getSourceQuestion(sessionId)
     if (!existingSourceQuestion) {
-      // First user message becomes the source question
       setSourceQuestion(sessionId, userMessage.trim())
-      console.log(`[Chat API] Set source question: "${userMessage.trim()}"`)
     }
 
-    // מבנה השאלות הקבוע: אחרי הודעה ראשונה – שאלה 0 (עצמך/אחר + מגדר) עם אפשרויות, אחר כך 3 שאלות פתוחות
     const userMessageCount = getRecentMessages(sessionId, 50).filter(m => m.speaker === 'user').length
     if (userMessageCount === 1) {
       const sourceQuestion = getSourceQuestion(sessionId)
       const question0 = getFixedQuestionByOrder(0, sourceQuestion ?? userMessage.trim())
-      console.log('[Chat API] First message → returning fixed question 0 (self/other + gender)')
       return NextResponse.json({
         question: question0
       })
@@ -93,9 +71,7 @@ export async function POST(request: NextRequest) {
     // This saves 1-2 seconds per request
     const agents = getAgents()
     const availableAgentIds = ['psychodynamic-freudian', 'cbt', 'dbt', 'managerial-organizational', 'social-sociological', 'modern-stoic']
-    const selectedAgentId = availableAgentIds[0] // Always use first agent for initial question
-    console.log(`[Chat API] OPTIMIZED: Skipping orchestrator, using agent: ${selectedAgentId}`)
-    
+    const selectedAgentId = availableAgentIds[0]
     const agent = getAgentById(selectedAgentId)
     const selectedExpert = { expertId: selectedAgentId, action: 'ask' as const }
     
@@ -188,9 +164,7 @@ export async function POST(request: NextRequest) {
     // כלל זהב: שאלת המקור חייבת להיות מוצגת עם כל שאלת המשך
     const sourceQuestion = getSourceQuestion(sessionId)
     
-    // Mark the first question as a pattern question (חובה מבנית!)
     markQuestionTypeAsked(sessionId, 'pattern')
-    console.log(`[Chat API] Marked first question as 'pattern' type`)
 
     const questionWithOptions: QuestionWithOptions = {
       question,
@@ -209,7 +183,6 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString()
     }
     addMessage(sessionId, expertMessage)
-    console.log(`[Chat API] Stored expert question for sessionId: ${sessionId}, total messages: ${getRecentMessages(sessionId, 100).length}`)
 
     const responseData: ChatQuestionResponse = {
       question: questionWithOptions

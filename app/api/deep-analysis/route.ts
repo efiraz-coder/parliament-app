@@ -12,12 +12,15 @@ interface MemberAnalysis {
   suggestions: string[] // 1-2 suggestions for directions of change
 }
 
+interface DeepAnalysisBody {
+  sessionId?: string
+}
+
 export async function POST(request: NextRequest) {
   try {
-    // Parse request body with better error handling
-    let body: any
+    let body: DeepAnalysisBody
     try {
-      body = await request.json()
+      body = (await request.json()) as DeepAnalysisBody
     } catch (parseError) {
       console.error('[Deep Analysis] Failed to parse request body:', parseError)
       return NextResponse.json(

@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import AuthLayout from '@/components/AuthLayout'
+import { motion } from 'framer-motion'
+import { Mail, Lock, UserPlus } from 'lucide-react'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -17,13 +18,11 @@ export default function RegisterPage() {
     e.preventDefault()
     setError('')
 
-    // Validate passwords match
     if (password !== confirmPassword) {
-      setError('הסיסמאות לא תואמות')
+      setError('הסיסמאות אינן תואמות')
       return
     }
 
-    // Validate password length
     if (password.length < 6) {
       setError('הסיסמה חייבת להכיל לפחות 6 תווים')
       return
@@ -41,14 +40,11 @@ export default function RegisterPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.error || 'שגיאה ביצירת החשבון')
+        setError(data.error || 'שגיאה בהרשמה')
         return
       }
 
-      if (data.requiresVerification) {
-        // Redirect to OTP verification page
-        router.push(`/verify?userId=${data.userId}&type=REGISTER`)
-      }
+      router.push(`/verify?userId=${data.userId}&type=REGISTER`)
     } catch {
       setError('שגיאת רשת. נסה שוב.')
     } finally {
@@ -57,150 +53,149 @@ export default function RegisterPage() {
   }
 
   return (
-    <AuthLayout title="הרשמה">
-      <form onSubmit={handleSubmit} className="auth-form">
-        {error && <div className="error-message">{error}</div>}
-        
-        <div className="form-group">
-          <label htmlFor="email">מייל</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
-            required
-            disabled={loading}
-          />
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-slate-900 px-4 py-12">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-[400px]"
+      >
+        {/* Logo */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1 }}
+          className="text-center mb-8"
+        >
+          <span className="text-5xl mb-4 block">🏛️</span>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            הפרלמנט הפנימי
+          </h1>
+          <p className="text-slate-400 text-lg">
+            צור חשבון חדש
+          </p>
+        </motion.div>
 
-        <div className="form-group">
-          <label htmlFor="password">סיסמה</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="לפחות 6 תווים"
-            required
-            disabled={loading}
-            minLength={6}
-          />
-        </div>
+        {/* Register Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white rounded-2xl p-8 shadow-xl"
+        >
+          <h2 className="text-2xl font-bold text-slate-900 text-center mb-6">
+            הרשמה
+          </h2>
 
-        <div className="form-group">
-          <label htmlFor="confirmPassword">אימות סיסמה</label>
-          <input
-            id="confirmPassword"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="הקלד שוב את הסיסמה"
-            required
-            disabled={loading}
-            minLength={6}
-          />
-        </div>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-base text-center font-medium"
+              >
+                {error}
+              </motion.div>
+            )}
 
-        <button type="submit" className="submit-btn" disabled={loading}>
-          {loading ? 'יוצר חשבון...' : 'צור חשבון'}
-        </button>
+            {/* Email Input */}
+            <div>
+              <label className="block text-base font-semibold text-slate-700 mb-2">
+                מייל
+              </label>
+              <div className="relative">
+                <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  required
+                  disabled={loading}
+                  className="w-full pr-12 pl-4 py-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 text-lg placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all disabled:opacity-50"
+                />
+              </div>
+            </div>
 
-        <div className="auth-links">
-          <Link href="/login">כבר יש לך חשבון? התחבר</Link>
-        </div>
-      </form>
+            {/* Password Input */}
+            <div>
+              <label className="block text-base font-semibold text-slate-700 mb-2">
+                סיסמה
+              </label>
+              <div className="relative">
+                <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  disabled={loading}
+                  className="w-full pr-12 pl-4 py-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 text-lg placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all disabled:opacity-50"
+                />
+              </div>
+            </div>
 
-      <style jsx>{`
-        .auth-form {
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-        }
+            {/* Confirm Password Input */}
+            <div>
+              <label className="block text-base font-semibold text-slate-700 mb-2">
+                אימות סיסמה
+              </label>
+              <div className="relative">
+                <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  disabled={loading}
+                  className="w-full pr-12 pl-4 py-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 text-lg placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all disabled:opacity-50"
+                />
+              </div>
+            </div>
 
-        .form-group {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
+            {/* Submit Button */}
+            <motion.button
+              type="submit"
+              disabled={loading}
+              whileHover={{ scale: loading ? 1 : 1.02 }}
+              whileTap={{ scale: loading ? 1 : 0.98 }}
+              className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  נרשם...
+                </span>
+              ) : (
+                <>
+                  הירשם
+                  <UserPlus className="w-5 h-5" />
+                </>
+              )}
+            </motion.button>
+          </form>
 
-        .form-group label {
-          font-weight: 600;
-          color: #333;
-          font-size: 14px;
-        }
+          {/* Links */}
+          <div className="mt-8 pt-6 border-t border-slate-200 text-center">
+            <Link
+              href="/login"
+              className="text-indigo-600 hover:text-indigo-800 font-semibold text-base transition-colors"
+            >
+              יש לך חשבון? התחבר
+            </Link>
+          </div>
+        </motion.div>
 
-        .form-group input {
-          padding: 14px 16px;
-          border: 2px solid #e0e0e0;
-          border-radius: 10px;
-          font-size: 16px;
-          transition: border-color 0.2s, box-shadow 0.2s;
-          direction: ltr;
-          text-align: left;
-        }
-
-        .form-group input:focus {
-          outline: none;
-          border-color: #0f3460;
-          box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
-        }
-
-        .form-group input:disabled {
-          background: #f5f5f5;
-          cursor: not-allowed;
-        }
-
-        .submit-btn {
-          padding: 16px;
-          background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
-          color: white;
-          border: none;
-          border-radius: 10px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .submit-btn:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(15, 52, 96, 0.4);
-        }
-
-        .submit-btn:disabled {
-          opacity: 0.7;
-          cursor: not-allowed;
-        }
-
-        .error-message {
-          background: #fee2e2;
-          color: #dc2626;
-          padding: 12px 16px;
-          border-radius: 10px;
-          font-size: 14px;
-          text-align: center;
-          border: 1px solid #fecaca;
-        }
-
-        .auth-links {
-          display: flex;
-          justify-content: center;
-          margin-top: 8px;
-        }
-
-        .auth-links :global(a) {
-          color: #0f3460;
-          text-decoration: none;
-          font-size: 14px;
-          transition: color 0.2s;
-        }
-
-        .auth-links :global(a:hover) {
-          color: #16213e;
-          text-decoration: underline;
-        }
-      `}</style>
-    </AuthLayout>
+        {/* Footer */}
+        <p className="text-center text-slate-500 text-sm mt-6">
+          © 2024 הפרלמנט הפנימי
+        </p>
+      </motion.div>
+    </div>
   )
 }

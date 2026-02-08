@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AnswersRequest, AnswersResponse } from '@/lib/types'
-import { getAgentById } from '@/lib/agents'
+import { getAgentById, Agent } from '@/lib/agents'
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 }
 
 async function generateAnalysis(
-  agent: any,
+  agent: Agent,
   originalQuestion: string,
   question: string,
   selectedOptions: string[],

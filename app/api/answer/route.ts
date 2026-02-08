@@ -4,7 +4,7 @@ import { collectParliamentProposals } from '@/lib/parliament-proposals'
 import { synthesizeQuestion } from '@/lib/question-synthesizer'
 import { collectAndSynthesizeInOne } from '@/lib/optimizations'
 import { OPTIMIZATION_CONFIG } from '@/lib/config'
-import { AnswerRequest, AnswerResponse, QuestionWithOptions, QuestionType } from '@/lib/types'
+import { AnswerRequest, AnswerResponse, QuestionWithOptions, QuestionType, ExpertProposal } from '@/lib/types'
 import { detectExternalDomain, getExternalDomainClarificationQuestion } from '@/lib/external-domain-detector'
 import { getExternalSpecialist } from '@/lib/external-specialists'
 import { isFixedQuestionId, getNextFixedQuestionOrder, getFixedQuestionByOrder } from '@/lib/fixed-questions'
@@ -16,7 +16,6 @@ export async function POST(request: NextRequest) {
 
     // Handle special external domain actions first
     if (action === 'ADD_EXTERNAL_SPECIALIST' && sessionId && externalDomain) {
-      console.log(`[Answer API] User approved adding external specialist: ${externalDomain}`)
       setExternalDomainUserApproval(sessionId, true)
       
       const specialist = getExternalSpecialist(externalDomain as ExternalDomainType)
@@ -115,7 +114,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'CONTINUE_WITHOUT_EXTERNAL' && sessionId) {
-      console.log(`[Answer API] User declined external specialist, continuing without`)
       setExternalDomainUserApproval(sessionId, false)
       
       // Continue with normal flow without external specialist
@@ -214,9 +212,6 @@ export async function POST(request: NextRequest) {
       ? `תשובות שנבחרו: ${selectedAnswers.join(', ')}${freeText ? ` | תשובה חופשית: ${freeText}` : ''}`
       : `תשובה: ${(freeText || '').trim() || '(ללא טקסט)'}`
     
-    // Verify we're using the shared process-level singleton store
-    console.log(`[Answer API] Using chatStore, storeId: ${chatStore.storeId}, sessions: ${chatStore.getSessionCount()}`)
-
     // בדיקה אם זו שאלה על עתיד קרוב - אם כן, נסמן שהמשתמש ענה על שאלת היעד
     if (isFutureGoalQuestion(question)) {
       setFutureGoalAnswered(sessionId, true)
@@ -230,7 +225,6 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString()
     }
     addMessage(sessionId, userAnswerMessage)
-    console.log(`[Answer API] Stored user answer for sessionId: ${sessionId}`)
 
     // ============================================
     // שאלות קבועות (פתוחות): אחרי תשובה – שאלה הבאה או תשובה סופית
@@ -270,8 +264,6 @@ export async function POST(request: NextRequest) {
       const detection = detectExternalDomain(userFullText)
       
       if (detection.detected && detection.domain && detection.domainDisplayName) {
-        console.log(`[Answer API] External domain detected: ${detection.domain} (triggers: ${detection.triggerWords?.join(', ')})`)
-        
         // Save the detection state (only if not already saved)
         if (!externalDomainState?.detected) {
           setExternalDomainDetected(sessionId, detection.domain, detection.domainDisplayName)
@@ -370,19 +362,15 @@ export async function POST(request: NextRequest) {
 
       // Get missing question types (חובה מבנית!)
       const missingTypesMain = getMissingQuestionTypes(sessionId) as QuestionType[]
-      console.log(`[Answer API] Missing question types: ${missingTypesMain.join(', ') || 'none'}`)
 
       // Check if external specialist is active
       const activeExternalDomain = getActiveExternalDomain(sessionId)
       
-      let proposals: any[]
+      let proposals: ExpertProposal[]
       let synthesizedQuestion: { question: string; options: string[]; questionType: QuestionType }
 
       // OPTIMIZATION: Use combined call if enabled and no external specialist
       if (OPTIMIZATION_CONFIG.useCombinedCall && !activeExternalDomain) {
-        console.log(`[Answer API] OPTIMIZED: Using combined call (saves 2-3 seconds)`)
-        const startTime = Date.now()
-        
         const result = await collectAndSynthesizeInOne(
           question,
           answerSummary,
@@ -396,12 +384,7 @@ export async function POST(request: NextRequest) {
           options: result.options,
           questionType: result.questionType
         }
-        
-        console.log(`[Answer API] Combined call completed in ${Date.now() - startTime}ms`)
       } else {
-        // FALLBACK: Original two-step process (for external specialists or if optimization disabled)
-        console.log(`[Answer API] Round ${newRoundNumber}: Using standard two-step process...`)
-        
         proposals = await collectParliamentProposals(
           question,
           answerSummary,
@@ -415,8 +398,6 @@ export async function POST(request: NextRequest) {
             error: 'Failed to collect expert opinions'
           })
         }
-
-        console.log(`[Answer API] Collected ${proposals.length} expert proposals`)
 
         const fullHistorySummary = history
           .map(msg => `${msg.speaker === 'user' ? 'משתמש' : msg.speaker}: ${msg.content}`)
@@ -447,9 +428,7 @@ export async function POST(request: NextRequest) {
         })
       }
 
-      // Mark the question type as asked
       markQuestionTypeAsked(sessionId, synthesizedQuestion.questionType as QuestionTypeKey)
-      console.log(`[Answer API] Asked question type: ${synthesizedQuestion.questionType}`)
 
       // Create next question
       const nextQuestionId = `question-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
@@ -473,7 +452,6 @@ export async function POST(request: NextRequest) {
         content: synthesizedQuestion.question,
         timestamp: new Date().toISOString()
       })
-      console.log(`[Answer API] Stored synthesized question for sessionId: ${sessionId}`)
 
       return NextResponse.json({
         mode: 'NEXT_QUESTION',

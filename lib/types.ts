@@ -129,6 +129,13 @@ export interface ChairSummaryNewFormat {
   expert_voices?: string[]
 }
 
+// מומחה נבחר עם תובנה ייחודית
+export interface SelectedExpert {
+  id: 'psychodynamic' | 'stoic' | 'cbt' | 'sociological' | 'organizational' | 'dbt'
+  name: string
+  insight: string
+}
+
 export interface ChairSummaryResponse {
   mode: 'INSUFFICIENT_HISTORY' | 'USER_UNSURE' | 'FULL_SUMMARY'
   chairMessage?: string
@@ -145,7 +152,10 @@ export interface ChairSummaryResponse {
     // פורמט חדש (JSON מובנה)
     originalQuestion?: string // שאלת המקור
     patternName?: string // שם הדפוס בשפה יומיומית
-    userFriendlyExplanation?: string // הסבר למשתמש
+    reflection?: string // סיכום אמפתי של המצב
+    information?: string // (deprecated) שיקוף: מה המשתמש אמר
+    selectedExperts?: SelectedExpert[] // 3 מומחים נבחרים עם תובנות ייחודיות
+    userFriendlyExplanation?: string // הסבר למשתמש (תובנות וניתוח)
     actionPlan?: ActionPlanStep[] // תכנית פעולה מובנית
     resistanceNote?: string // התנגדות צפויה
     medicalNote?: string // המלצה רפואית
@@ -154,6 +164,6 @@ export interface ChairSummaryResponse {
     jewishQuote?: string // משפט או תובנה מהמקורות
     jewishSource?: string // שם המקור (ספר, מסכת)
     jewishExplanation?: string // הסבר מודרני קצר
-    offerTrainingQuestion?: string // שאלה: האם תרצה בתהליך אימוני – מוצג אחרי התובנות; רק אם המשתמש אומר כן מוצגים actionPlan + resistanceNote
+    offerTrainingQuestion?: string // שאלה: האם תרצה בתהליך אימוני
   }
 }

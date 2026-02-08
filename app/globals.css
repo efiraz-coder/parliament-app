@@ -1,497 +1,497 @@
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
+/* ========================================
+   ACCESSIBILITY-FIRST DESIGN SYSTEM
+   Base: 18px, High Contrast, Large Targets
+   No Glassmorphism - Solid, Readable UI
+   ======================================== */
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #fafafa;
-}
+/* Import Google Fonts - High Legibility + Serif for headings */
+@import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;600;700&family=Heebo:wght@300;400;500;600;700&display=swap');
 
-textarea:focus,
-button:focus {
-  outline: 2px solid #0070f3;
-  outline-offset: 2px;
-}
-
-/* קונטיינר ראשי לפרלמנט */
-.parliament-container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 16px;
-  width: 100%;
-}
-
-/* כותרת הפרלמנט */
-.parliament-title {
-  text-align: center;
-  font-size: 1.6rem;
-  font-weight: 700;
-  margin-bottom: 24px;
-  color: #1a1a1a;
-}
-
-/* גריד אחיד לכרטיסי חברי הפרלמנט */
-.members-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  width: 100%;
-}
-
-/* כרטיס חבר פרלמנט אחיד - עיצוב משופר */
-.member-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 24px 20px;
-  width: 100%;
-  background-color: #ffffff;
-  border-radius: 16px;
-  border: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.member-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-}
-
-/* אייקון עגול - צבע לפי אסכולה */
-.card-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.25rem;
-  color: #ffffff;
-  margin-bottom: 12px;
-  flex-shrink: 0;
-}
-
-/* צבעי אייקון לפי אסכולה */
-.icon-psychodynamic { background: #1f7ae0; }
-.icon-cbt { background: #00b3a4; }
-.icon-managerial { background: #10b981; }
-.icon-social { background: #7b61ff; }
-.icon-stoic { background: #ffb020; }
-
-/* כותרת כרטיס */
-.card-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: #1a1a1a;
-  line-height: 1.4;
-  min-height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* טקסט תיאור כרטיס */
-.card-text {
-  font-size: 0.9rem;
-  line-height: 1.5;
-  margin-bottom: 12px;
-  color: #666666;
-  flex-grow: 1;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* קישור/כפתור בכרטיס */
-.card-link {
-  font-size: 0.85rem;
-  color: #007aff;
-  text-decoration: none;
-  cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 8px;
-  transition: background-color 0.2s;
-}
-
-.card-link:hover {
-  background-color: rgba(0, 122, 255, 0.1);
-  text-decoration: underline;
-}
-
-/* רספונסיביות - טאבלט */
-@media (max-width: 900px) {
-  .members-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+@layer base {
+  :root {
+    --font-serif: 'Frank Ruhl Libre', Georgia, 'Times New Roman', serif;
+    --font-heebo: 'Heebo', system-ui, -apple-system, sans-serif;
+    
+    /* Navy Blue Brand Color */
+    --brand-navy: #1a3a5c;
+    --brand-navy-dark: #152d47;
+    --brand-navy-light: #2d5a8a;
+    
+    /* High Contrast Light Mode */
+    --background: #f8fafc;
+    --foreground: #0f172a;
+    --card: #ffffff;
+    --card-border: #e2e8f0;
+    --primary: #1a3a5c;
+    --primary-hover: #152d47;
+    --secondary: #64748b;
+    --muted: #94a3b8;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
   }
+
+  .dark {
+    --background: #0f172a;
+    --foreground: #f1f5f9;
+    --card: #1e293b;
+    --card-border: #334155;
+    --primary: #3b82f6;
+    --primary-hover: #60a5fa;
+    --secondary: #94a3b8;
+    --muted: #64748b;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+  }
+
+  html {
+    font-size: 18px; /* BASE SIZE: 18px for accessibility */
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-heebo), system-ui, sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+  }
+
+  /* High Contrast Text - Serif for headings */
+  h1, h2, h3 {
+    font-family: var(--font-serif), Georgia, serif;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--foreground);
+  }
+
+  h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--foreground);
+  }
+
+  /* Accessible focus states */
+  *:focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* ========================================
+     SOLID CARDS - No Glassmorphism
+     High contrast with subtle borders
+     ======================================== */
   
-  .parliament-title {
-    font-size: 1.4rem;
+  .card {
+    @apply bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-600 shadow-sm;
   }
-}
 
-/* רספונסיביות - מובייל */
-@media (max-width: 600px) {
-  .members-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
+  .card-elevated {
+    @apply bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-600 shadow-md;
   }
+
+  /* ========================================
+     ROOM CARDS - For Private Rooms
+     ======================================== */
   
-  .parliament-container {
-    padding: 12px;
+  .room-card {
+    @apply bg-white dark:bg-slate-800 rounded-2xl border-2 border-slate-200 dark:border-slate-600 p-5 transition-all duration-200;
+    min-height: 120px;
   }
-  
-  .parliament-title {
-    font-size: 1.3rem;
-    margin-bottom: 20px;
+
+  .room-card:hover {
+    @apply border-indigo-400 dark:border-indigo-500 shadow-md;
   }
-  
-  .member-card {
-    padding: 20px 16px;
+
+  .room-card:active {
+    @apply scale-[0.98];
   }
+
+  /* ========================================
+     QUESTION CARDS - Provocative Questions
+     ======================================== */
   
-  .card-icon {
-    width: 48px;
-    height: 48px;
-    font-size: 1.1rem;
+  .question-card {
+    @apply bg-white dark:bg-slate-800 rounded-xl border-2 border-slate-200 dark:border-slate-600 p-4 transition-all duration-200;
+    min-height: 80px;
   }
+
+  .question-card:hover {
+    @apply border-indigo-400 dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20;
+  }
+
+  /* ========================================
+     BOTTOM NAVIGATION - 4 Items
+     Large touch targets (min 48px)
+     ======================================== */
   
-  .card-title {
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-t-2 border-slate-200 dark:border-slate-700 px-2 py-1 md:hidden;
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  .bottom-nav-item {
+    @apply flex flex-col items-center justify-center py-2 px-3 rounded-xl transition-colors duration-200;
+    min-height: 56px;
+    min-width: 64px;
+  }
+
+  .bottom-nav-item.active {
+    @apply bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300;
+  }
+
+  .bottom-nav-item:not(.active) {
+    @apply text-slate-600 dark:text-slate-400;
+  }
+
+  .bottom-nav-item:not(.active):hover {
+    @apply bg-slate-100 dark:bg-slate-800;
+  }
+
+  .bottom-nav-label {
+    @apply text-xs font-semibold mt-1;
+  }
+
+  /* ========================================
+     SIDEBAR - Desktop Only
+     ======================================== */
+  
+  .sidebar {
+    @apply hidden md:flex fixed right-0 top-0 bottom-0 w-72 bg-white dark:bg-slate-900 border-l-2 border-slate-200 dark:border-slate-700 flex-col z-40;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-5 py-4 mx-3 rounded-xl transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium;
+    min-height: 56px;
+  }
+
+  .sidebar-item:hover {
+    @apply bg-slate-100 dark:bg-slate-800;
+  }
+
+  .sidebar-item.active {
+    @apply bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-semibold;
+  }
+
+  /* ========================================
+     BUTTONS - Large Touch Targets
+     Minimum 48px height
+     ======================================== */
+  
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all duration-200;
+    min-height: 48px;
+    padding: 0.75rem 1.5rem;
+  }
+
+  .btn-primary {
+    background-color: var(--brand-navy);
+    @apply text-white shadow-md;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--brand-navy-dark);
+  }
+
+  .btn-primary:active {
+    @apply scale-[0.98];
+    background-color: #0f1f30;
+  }
+
+  .btn-secondary {
+    @apply bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200;
+  }
+
+  .btn-secondary:hover {
+    @apply border-slate-400 dark:border-slate-500 bg-slate-50 dark:bg-slate-700;
+  }
+
+  .btn-ghost {
+    @apply text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white;
+  }
+
+  .btn-lg {
+    min-height: 56px;
+    padding: 1rem 2rem;
+    @apply text-lg;
+  }
+
+  .btn-full {
+    @apply w-full;
+  }
+
+  /* ========================================
+     INPUTS - Accessible Form Fields
+     ======================================== */
+  
+  .input {
+    @apply w-full px-4 py-3 bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400;
+    min-height: 48px;
     font-size: 1rem;
-    min-height: auto;
+  }
+
+  .input:focus {
+    @apply border-indigo-500 outline-none ring-2 ring-indigo-500/20;
+  }
+
+  .input-error {
+    @apply border-red-500 focus:border-red-500 focus:ring-red-500/20;
+  }
+
+  .label {
+    @apply block text-base font-semibold text-slate-700 dark:text-slate-300 mb-2;
+  }
+
+  /* ========================================
+     BADGES & TAGS
+     ======================================== */
+  
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold;
+  }
+
+  .badge-primary {
+    @apply bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300;
+  }
+
+  .badge-success {
+    @apply bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300;
+  }
+
+  .badge-warning {
+    @apply bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300;
+  }
+
+  .badge-danger {
+    @apply bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300;
+  }
+
+  .badge-neutral {
+    @apply bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300;
+  }
+
+  /* ========================================
+     TABS - Room Switching
+     ======================================== */
+  
+  .tabs {
+    @apply flex gap-2 overflow-x-auto pb-2;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab {
+    @apply px-4 py-3 rounded-xl font-semibold whitespace-nowrap transition-colors duration-200;
+    min-height: 48px;
+  }
+
+  .tab.active {
+    @apply bg-indigo-600 text-white;
+  }
+
+  .tab:not(.active) {
+    @apply bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400;
+  }
+
+  .tab:not(.active):hover {
+    @apply bg-slate-200 dark:bg-slate-700;
+  }
+
+  /* ========================================
+     SHEET / DRAWER - Mobile Settings
+     ======================================== */
+  
+  .sheet-overlay {
+    @apply fixed inset-0 bg-black/60 z-50;
+  }
+
+  .sheet {
+    @apply fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 rounded-t-3xl z-50 max-h-[85vh] overflow-y-auto;
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+
+  .sheet-handle {
+    @apply w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto mt-3 mb-4;
+  }
+
+  /* ========================================
+     TOGGLE / SWITCH - Anonymous Posting
+     ======================================== */
+  
+  .toggle {
+    @apply relative inline-flex items-center cursor-pointer;
+  }
+
+  .toggle-track {
+    @apply w-14 h-8 bg-slate-300 dark:bg-slate-600 rounded-full transition-colors duration-200;
+  }
+
+  .toggle-track.active {
+    @apply bg-indigo-600;
+  }
+
+  .toggle-thumb {
+    @apply absolute left-1 top-1 w-6 h-6 bg-white rounded-full shadow transition-transform duration-200;
+  }
+
+  .toggle-thumb.active {
+    @apply translate-x-6;
+  }
+
+  /* ========================================
+     BOOKMARK ICON
+     ======================================== */
+  
+  .bookmark-btn {
+    @apply p-2 rounded-lg transition-colors duration-200;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .bookmark-btn:hover {
+    @apply bg-slate-100 dark:bg-slate-700;
+  }
+
+  .bookmark-btn.active {
+    @apply text-amber-500;
+  }
+
+  /* ========================================
+     THREAD VIEW - Expert vs Community
+     ======================================== */
+  
+  .thread-tabs {
+    @apply flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl;
+  }
+
+  .thread-tab {
+    @apply flex-1 py-3 px-4 rounded-lg font-semibold text-center transition-colors duration-200;
+    min-height: 48px;
+  }
+
+  .thread-tab.active {
+    @apply bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm;
+  }
+
+  .thread-tab:not(.active) {
+    @apply text-slate-500 dark:text-slate-400;
+  }
+
+  /* ========================================
+     SCROLLBAR HIDE - Keep Functionality
+     ======================================== */
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ========================================
+     SECURITY DISCLAIMER
+     ======================================== */
+  
+  .security-warning {
+    @apply p-4 bg-blue-600 text-white rounded-xl text-lg font-bold text-center;
+  }
+}
+
+@layer utilities {
+  /* Safe Area Padding */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
   }
   
-  .card-text {
-    font-size: 0.85rem;
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
   }
-}
 
-/* אייקון שעון חול מתהפך */
-@keyframes hourglass {
-  0% {
-    transform: rotate(0deg);
+  /* Animation Utilities */
+  .transition-fast {
+    transition-duration: 150ms;
   }
-  50% {
-    transform: rotate(180deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
 
-.thinking-indicator {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
-  margin: 1rem 0;
-}
+  .transition-normal {
+    transition-duration: 200ms;
+  }
 
-.hourglass-icon {
-  width: 40px;
-  height: 40px;
-  animation: hourglass 2s linear infinite;
-  fill: #0070f3;
+  /* Text Utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
 }
 
 /* ========================================
-   רספונסיביות כללית לאפליקציה
+   RESPONSIVE CONTAINER SYSTEM
+   Mobile-first with max-width 1200px
    ======================================== */
 
-/* קונטיינר ראשי של האפליקציה */
-.app-main {
-  min-height: 100vh;
-  padding: 2rem;
+.page-container {
+  @apply w-full mx-auto;
   max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
 }
 
-/* כותרת ראשית */
-.app-title {
-  text-align: center;
-  font-size: 2.5rem;
-  margin-bottom: 2rem;
-  font-weight: bold;
-  color: #333;
+/* Responsive padding */
+.section-padding {
+  @apply px-4 py-6;
 }
 
-/* אזור השאלה */
-.question-container {
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  background-color: #fff;
-}
-
-/* כפתורים */
-.btn-primary {
-  width: 100%;
-  padding: 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
-  background-color: #0070f3;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.btn-primary:hover {
-  background-color: #0051cc;
-}
-
-.btn-secondary {
-  width: 100%;
-  padding: 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
-  background-color: transparent;
-  color: #0070f3;
-  border: 2px solid #0070f3;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-secondary:hover {
-  background-color: #0070f3;
-  color: white;
-}
-
-/* שדות קלט */
-.input-field {
-  width: 100%;
-  padding: 0.75rem;
-  font-size: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-bottom: 0.75rem;
-}
-
-.input-field:focus {
-  outline: none;
-  border-color: #0070f3;
-  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
-}
-
-/* טקסט אזור */
-.textarea-field {
-  width: 100%;
-  min-height: 100px;
-  padding: 0.75rem;
-  font-size: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  resize: vertical;
-}
-
-/* אופציות בחירה */
-.option-button,
-.option-label {
-  width: 100%;
-  padding: 1rem;
-  font-size: 1rem;
-  text-align: right;
-  background-color: #f8f9fa;
-  border: 2px solid #e9ecef;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.option-button:hover,
-.option-label:hover {
-  border-color: #0070f3;
-  background-color: #f0f7ff;
-}
-
-.option-button.selected,
-.option-label.selected {
-  border-color: #0070f3;
-  background-color: #e6f0ff;
-}
-
-/* רשימת אופציות */
-.options-list {
-  width: 100%;
-}
-
-/* כרטיס תוצאה/סיכום */
-.result-card {
-  padding: 1.5rem;
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-  margin-bottom: 1rem;
-}
-
-/* רספונסיביות - טאבלט */
-@media (max-width: 768px) {
-  .app-main {
-    padding: 1rem;
-  }
-  
-  .app-title {
-    font-size: 2rem;
-  }
-  
-  .question-container {
-    padding: 1rem;
-  }
-  
-  .btn-primary,
-  .btn-secondary {
-    padding: 0.875rem;
-    font-size: 0.95rem;
-  }
-  
-  .option-button {
-    padding: 0.875rem;
-    font-size: 0.95rem;
-  }
-  
-  .result-card {
-    padding: 1rem;
+@media (min-width: 640px) {
+  .section-padding {
+    @apply px-6 py-8;
   }
 }
 
-/* רספונסיביות - מובייל */
-@media (max-width: 480px) {
-  .app-main {
-    padding: 0.75rem;
-  }
-  
-  .app-title {
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .question-container {
-    padding: 0.875rem;
-    border-radius: 10px;
-  }
-  
-  .btn-primary,
-  .btn-secondary {
-    padding: 0.75rem;
-    font-size: 0.9rem;
-  }
-  
-  .option-button {
-    padding: 0.75rem;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  .input-field,
-  .textarea-field {
-    font-size: 16px; /* מונע זום אוטומטי ב-iOS */
-  }
-  
-  .result-card {
-    padding: 0.875rem;
-    border-radius: 10px;
+@media (min-width: 1024px) {
+  .section-padding {
+    @apply px-8 py-10;
   }
 }
 
-/* אזור שאלות ותשובות */
-.qa-container {
-  scrollbar-width: thin;
-  scrollbar-color: #ccc #f5f5f5;
+/* Responsive card grid */
+.card-grid {
+  @apply grid gap-4;
+  grid-template-columns: 1fr;
 }
 
-.qa-container::-webkit-scrollbar {
-  width: 6px;
-}
-
-.qa-container::-webkit-scrollbar-track {
-  background: #f5f5f5;
-  border-radius: 3px;
-}
-
-.qa-container::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 3px;
-}
-
-/* טופס התחלת שיחה */
-.start-form {
-  width: 100%;
-}
-
-/* התאמות נגישות למגע */
-@media (hover: none) and (pointer: coarse) {
-  .member-card:hover {
-    transform: none;
-  }
-  
-  .btn-primary:hover,
-  .btn-secondary:hover,
-  .option-button:hover {
-    /* ביטול אפקט hover במכשירי מגע */
-  }
-  
-  .option-button:active {
-    background-color: #e6f0ff;
-    border-color: #0070f3;
+@media (min-width: 640px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+    @apply gap-5;
   }
 }
 
-/* רספונסיביות נוספת למובייל */
-@media (max-width: 600px) {
-  .qa-container {
-    min-height: 250px;
-    padding: 0.75rem;
-    gap: 1rem;
-  }
-  
-  .start-form {
-    gap: 0.5rem;
-  }
-  
-  .textarea-field {
-    min-height: 100px;
-  }
-  
-  .option-button,
-  .option-label {
-    padding: 0.875rem;
-    font-size: 0.9rem;
-    border-radius: 8px;
-  }
-  
-  .options-list {
-    gap: 0.5rem;
+@media (min-width: 1024px) {
+  .card-grid {
+    grid-template-columns: repeat(3, 1fr);
+    @apply gap-6;
   }
 }
 
-/* מניעת זום ב-iOS בעת פוקוס על שדות */
-@media screen and (max-width: 600px) {
-  input[type="text"],
-  input[type="email"],
-  input[type="number"],
-  textarea,
-  select {
-    font-size: 16px !important;
+/* Two-column grid for larger items */
+.card-grid-2 {
+  @apply grid gap-4;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .card-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+    @apply gap-5;
   }
 }

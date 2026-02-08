@@ -234,9 +234,18 @@ export async function POST(request: NextRequest) {
       externalDomainNote?: string
     }
     
+    interface SelectedExpertRaw {
+      id?: string
+      name?: string
+      insight?: string
+    }
+
     interface NewFormat {
       original_question?: string
       pattern_name?: string
+      reflection?: string // סיכום אמפתי
+      information?: string // (deprecated) שיקוף
+      selected_experts?: SelectedExpertRaw[] // 3 מומחים נבחרים
       user_friendly_explanation?: string
       action_plan?: Array<{ title?: string; description?: string; success_criteria?: string }>
       resistance_note?: string
@@ -259,6 +268,13 @@ export async function POST(request: NextRequest) {
     // Detect if new format (has pattern_name or action_plan)
     const isNewFormat = rawData.pattern_name || rawData.action_plan
     
+    // Selected expert type
+    interface SelectedExpert {
+      id: string
+      name: string
+      insight: string
+    }
+
     // Normalize to a unified structure
     let summaryData: {
       mechanism?: string
@@ -272,6 +288,9 @@ export async function POST(request: NextRequest) {
       // New format fields
       originalQuestion?: string
       patternName?: string
+      reflection?: string // סיכום אמפתי
+      information?: string // (deprecated)
+      selectedExperts?: SelectedExpert[] // 3 מומחים נבחרים
       userFriendlyExplanation?: string
       actionPlan?: Array<{ title: string; description: string; success_criteria: string }>
       resistanceNote?: string
@@ -302,10 +321,27 @@ export async function POST(request: NextRequest) {
         }))
         .filter(step => step.title || step.description) // Remove empty steps
 
+      // Convert selected_experts to properly typed array
+      const typedSelectedExperts: SelectedExpert[] = Array.isArray(rawData.selected_experts)
+        ? rawData.selected_experts
+            .filter((e): e is SelectedExpertRaw => typeof e === 'object' && e !== null)
+            .map(e => ({
+              id: e.id ?? 'unknown',
+              name: e.name ?? '',
+              insight: e.insight ?? ''
+            }))
+            .filter(e => e.name && e.insight)
+        : []
+
+      // Also convert selected_experts to expertVoices for backward compatibility
+      const expertVoicesFromSelected = typedSelectedExperts.map(e => 
+        `**${e.name}:** ${e.insight}`
+      )
+
       summaryData = {
         // Map new format to old fields for backward compatibility
         mechanism: rawData.user_friendly_explanation,
-        expertVoices: rawData.expert_voices,
+        expertVoices: expertVoicesFromSelected.length > 0 ? expertVoicesFromSelected : rawData.expert_voices,
         steps: stepsAsStrings,
         resistance: rawData.resistance_note,
         closing: rawData.closing,
@@ -313,6 +349,9 @@ export async function POST(request: NextRequest) {
         // Also store new format fields
         originalQuestion: rawData.original_question,
         patternName: rawData.pattern_name,
+        reflection: rawData.reflection, // סיכום אמפתי
+        information: rawData.information || rawData.reflection, // fallback
+        selectedExperts: typedSelectedExperts.length > 0 ? typedSelectedExperts : undefined,
         userFriendlyExplanation: rawData.user_friendly_explanation,
         actionPlan: typedActionPlan.length > 0 ? typedActionPlan : undefined,
         resistanceNote: rawData.resistance_note,
@@ -321,7 +360,6 @@ export async function POST(request: NextRequest) {
         offerTrainingQuestion: rawData.offer_training_question
       }
       
-      console.log('[Chair Summary] Parsed new format response with pattern:', rawData.pattern_name)
     } else {
       // Old format
       summaryData = {
@@ -424,6 +462,9 @@ export async function POST(request: NextRequest) {
         // New format fields
         originalQuestion: summaryData.originalQuestion?.trim() || undefined,
         patternName: summaryData.patternName?.trim() || undefined,
+        reflection: summaryData.reflection?.trim() || undefined, // סיכום אמפתי
+        information: summaryData.information?.trim() || summaryData.reflection?.trim() || undefined, // fallback
+        selectedExperts: summaryData.selectedExperts || undefined, // 3 מומחים נבחרים
         userFriendlyExplanation: summaryData.userFriendlyExplanation?.trim() || undefined,
         actionPlan: summaryData.actionPlan || undefined,
         resistanceNote: summaryData.resistanceNote?.trim() || undefined,

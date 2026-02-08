@@ -52,19 +52,17 @@ export async function callAgent(
     })
   ]
 
-  const requestConfig: any = {
-    model: options?.model ?? FAST_MODEL, // Default to FAST_MODEL for expert calls
+  const requestConfig: Record<string, unknown> = {
+    model: options?.model ?? FAST_MODEL,
     messages: fullMessages,
     temperature: options?.temperature ?? OPENAI_CONFIG.temperature,
-    max_tokens: options?.maxTokens ?? OPENAI_CONFIG.maxTokens
+    max_tokens: options?.maxTokens ?? OPENAI_CONFIG.maxTokens,
   }
-
-  // הוספת response_format רק אם נדרש
   if (options?.responseFormat === 'json_object') {
     requestConfig.response_format = { type: 'json_object' }
   }
 
-  const response = await openai.chat.completions.create(requestConfig)
+  const response = await openai.chat.completions.create(requestConfig as OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming)
 
   const content = response.choices[0]?.message?.content
   if (!content) {
@@ -140,19 +138,18 @@ export async function callExternalSpecialist(
     }
   ]
 
-  const requestConfig: any = {
+  const requestConfig: Record<string, unknown> = {
     model: options?.model ?? FAST_MODEL,
     messages,
     temperature: options?.temperature ?? OPENAI_CONFIG.temperature,
-    max_tokens: options?.maxTokens ?? OPENAI_CONFIG.maxTokens
+    max_tokens: options?.maxTokens ?? OPENAI_CONFIG.maxTokens,
   }
-
   if (options?.responseFormat === 'json_object') {
     requestConfig.response_format = { type: 'json_object' }
   }
 
   try {
-    const response = await openai.chat.completions.create(requestConfig)
+    const response = await openai.chat.completions.create(requestConfig as OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming)
     return response.choices[0]?.message?.content || null
   } catch (error) {
     console.error('[External Specialist] Error calling external specialist:', error)
