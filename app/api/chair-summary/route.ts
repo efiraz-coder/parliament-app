@@ -3,7 +3,6 @@ import { getMessages, addMessage, ChatMessage, countUserMessages, hasDontKnowPat
 import { collectExpertContentAnalyses, selectRelevantExperts } from '@/lib/expert-content-analysis'
 import { DEEP_MODEL, DEEP_MODEL_MAX_TOKENS, OPENAI_CONFIG, getOpenAIApiKey, CHAIR_PROMPTS, OPTIMIZATION_CONFIG, FAST_MODEL } from '@/lib/config'
 import { ChairSummaryResponse, SelectedExpert } from '@/lib/types'
-import OpenAI from 'openai'
 import { getExternalSpecialist } from '@/lib/external-specialists'
 import { getJewishInsightForSituation } from '@/lib/jewish-insight'
 
@@ -175,9 +174,7 @@ export async function POST(request: NextRequest) {
 `
       : ''
 
-    const openai = new OpenAI({
-      apiKey: getOpenAIApiKey()
-    })
+    const apiKey = getOpenAIApiKey()
 
     // שאלת המקור – הודעה ראשונה של המשתמש (לשימוש בתובנה יהודית במקביל)
     const firstUserMsg = history.find(m => m.speaker === 'user')?.content?.slice(0, 300) || ''
@@ -192,24 +189,46 @@ export async function POST(request: NextRequest) {
     const chairModel = OPTIMIZATION_CONFIG.useFastModelForChair ? FAST_MODEL : DEEP_MODEL
     const chairMaxTokens = (OPTIMIZATION_CONFIG.useFastModelForChair ? 1200 : Math.min(DEEP_MODEL_MAX_TOKENS, 1500))
 
+    // Direct fetch to OpenAI (SDK had connection issues on Vercel)
+    async function callOpenAIDirect(messages: Array<{role: string; content: string}>, model: string, maxTokens: number) {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          temperature: 0.8,
+          max_tokens: maxTokens,
+          frequency_penalty: 0.7,
+          presence_penalty: 0.6,
+          response_format: { type: 'json_object' },
+        }),
+      })
+      if (!res.ok) {
+        const errorBody = await res.text()
+        throw new Error(`OpenAI API ${res.status}: ${errorBody.slice(0, 300)}`)
+      }
+      const data = await res.json()
+      return data.choices?.[0]?.message?.content || null
+    }
+
     // הרצה במקביל: chair + תובנה יהודית (חוסך זמן – לא מחכים ל-chair כדי להתחיל חיפוש מקור)
-    const [response, jewishInsightEarly] = await Promise.all([
-      openai.chat.completions.create({
-        model: chairModel,
-        messages: [
+    const [chairContent, jewishInsightEarly] = await Promise.all([
+      callOpenAIDirect(
+        [
           { role: 'system', content: systemMessage },
           { role: 'user', content: `${promptToUse}${askingAboutOthersInstruction}\n\nהשיחה המלאה:\n${conversationSummary}${expertAnalysesText}${externalDomainContext}` }
         ],
-        temperature: 0.8,
-        max_tokens: chairMaxTokens,
-        frequency_penalty: 0.7,
-        presence_penalty: 0.6,
-        response_format: { type: 'json_object' }
-      }),
+        chairModel,
+        chairMaxTokens
+      ),
       getJewishInsightForSituation(situationForJewish, firstUserMsg)
     ])
 
-    let content = response.choices[0]?.message?.content
+    let content = chairContent
     if (!content || typeof content !== 'string') {
       throw new Error('לא התקבלה תגובה מ-OpenAI')
     }
