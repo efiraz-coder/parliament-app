@@ -637,14 +637,14 @@ export default function Home() {
               )}
 
               {/* Expert Insights Section - זוויות מהפרלמנט */}
-              {(chairSummary.summary.selectedExperts?.length > 0 || chairSummary.summary.expertVoices?.length > 0 || chairSummary.summary.mechanism) && (
+              {((chairSummary.summary.selectedExperts?.length ?? 0) > 0 || (chairSummary.summary.expertVoices?.length ?? 0) > 0 || chairSummary.summary.mechanism) && (
                 <div className="mb-6">
                   <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2 text-lg">
                     💡 זוויות מהפרלמנט
                   </h4>
                   
                   {/* New structured expert cards */}
-                  {chairSummary.summary.selectedExperts?.length > 0 ? (
+                  {(chairSummary.summary.selectedExperts?.length ?? 0) > 0 ? (
                     <div className="space-y-4">
                       {chairSummary.summary.selectedExperts.map((expert, index) => (
                         <motion.div
@@ -661,7 +661,7 @@ export default function Home() {
                         </motion.div>
                       ))}
                     </div>
-                  ) : chairSummary.summary.expertVoices?.length > 0 ? (
+                  ) : (chairSummary.summary.expertVoices?.length ?? 0) > 0 ? (
                     /* Fallback to old expertVoices format */
                     <div className="space-y-4">
                       {chairSummary.summary.expertVoices.map((voice: string, index: number) => (
@@ -703,7 +703,7 @@ export default function Home() {
                     🎯 כלים לפעולה
                   </h4>
                   <ol className="space-y-6">
-                    {chairSummary.summary.actionPlan?.length > 0
+                    {(chairSummary.summary.actionPlan?.length ?? 0) > 0
                       ? chairSummary.summary.actionPlan.map((step, index) => (
                           <li key={index} className="flex gap-4">
                             <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#1E293B] text-white text-sm font-bold flex items-center justify-center mt-0.5">
