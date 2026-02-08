@@ -1,4 +1,4 @@
-import { getAgentById, Agent } from './agents'
+import { getAgentById } from './agents'
 import { OPENAI_CONFIG, FAST_MODEL, getOpenAIApiKey } from './config'
 import OpenAI from 'openai'
 
@@ -9,23 +9,19 @@ export interface AgentMessage {
 
 /**
  * פונקציה אחידה לקריאת agent עם system_prompt ייחודי
- * @param agentId - מזהה ה-agent
- * @param messages - רשימת הודעות (ללא system message - הוא מתווסף אוטומטית)
- * @param options - אפשרויות נוספות (temperature, max_tokens וכו')
- * @returns תשובת ה-agent
  */
 export async function callAgent(
   agentId: string,
   messages: Omit<AgentMessage, 'role'>[] | AgentMessage[],
   options?: {
-    model?: string // Allow specifying model (defaults to FAST_MODEL for experts)
+    model?: string
     temperature?: number
     maxTokens?: number
     responseFormat?: 'json_object' | 'text'
   }
 ): Promise<string> {
   const agent = getAgentById(agentId)
-  
+
   if (!agent) {
     throw new Error(`Agent with id ${agentId} not found`)
   }
@@ -34,35 +30,30 @@ export async function callAgent(
     apiKey: getOpenAIApiKey()
   })
 
-  // בניית רשימת הודעות עם system prompt ייחודי
   const fullMessages: AgentMessage[] = [
-    {
-      role: 'system',
-      content: agent.systemPrompt
-    },
+    { role: 'system', content: agent.systemPrompt },
     ...messages.map(msg => {
-      // אם ההודעה כבר כוללת role, השתמש בה. אחרת, הוסף role: 'user'
       if ('role' in msg && msg.role) {
         return msg as AgentMessage
       }
-      return {
-        role: 'user' as const,
-        content: msg.content
-      }
+      return { role: 'user' as const, content: msg.content }
     })
   ]
 
-  const requestConfig: Record<string, unknown> = {
-    model: options?.model ?? FAST_MODEL,
-    messages: fullMessages,
-    temperature: options?.temperature ?? OPENAI_CONFIG.temperature,
-    max_tokens: options?.maxTokens ?? OPENAI_CONFIG.maxTokens,
-  }
-  if (options?.responseFormat === 'json_object') {
-    requestConfig.response_format = { type: 'json_object' }
-  }
-
-  const response = await openai.chat.completions.create(requestConfig as OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming)
+  const response = options?.responseFormat === 'json_object'
+    ? await openai.chat.completions.create({
+        model: options?.model ?? FAST_MODEL,
+        messages: fullMessages,
+        temperature: options?.temperature ?? OPENAI_CONFIG.temperature,
+        max_tokens: options?.maxTokens ?? OPENAI_CONFIG.maxTokens,
+        response_format: { type: 'json_object' },
+      })
+    : await openai.chat.completions.create({
+        model: options?.model ?? FAST_MODEL,
+        messages: fullMessages,
+        temperature: options?.temperature ?? OPENAI_CONFIG.temperature,
+        max_tokens: options?.maxTokens ?? OPENAI_CONFIG.maxTokens,
+      })
 
   const content = response.choices[0]?.message?.content
   if (!content) {
@@ -90,10 +81,10 @@ export async function callMultipleAgents(
         return { agentId, response, error: null }
       } catch (error) {
         console.error(`Error calling agent ${agentId}:`, error)
-        return { 
-          agentId, 
-          response: null, 
-          error: error instanceof Error ? error.message : 'Unknown error' 
+        return {
+          agentId,
+          response: null,
+          error: error instanceof Error ? error.message : 'Unknown error'
         }
       }
     })
@@ -111,7 +102,6 @@ export async function callMultipleAgents(
 
 /**
  * Call an external specialist with a custom system prompt
- * Used for temporary domain-specific specialists (ADHD, legal, financial, etc.)
  */
 export async function callExternalSpecialist(
   systemPrompt: string,
@@ -128,28 +118,25 @@ export async function callExternalSpecialist(
   })
 
   const messages: AgentMessage[] = [
-    {
-      role: 'system',
-      content: systemPrompt
-    },
-    {
-      role: 'user',
-      content: userMessage
-    }
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userMessage }
   ]
 
-  const requestConfig: Record<string, unknown> = {
-    model: options?.model ?? FAST_MODEL,
-    messages,
-    temperature: options?.temperature ?? OPENAI_CONFIG.temperature,
-    max_tokens: options?.maxTokens ?? OPENAI_CONFIG.maxTokens,
-  }
-  if (options?.responseFormat === 'json_object') {
-    requestConfig.response_format = { type: 'json_object' }
-  }
-
   try {
-    const response = await openai.chat.completions.create(requestConfig as OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming)
+    const response = options?.responseFormat === 'json_object'
+      ? await openai.chat.completions.create({
+          model: options?.model ?? FAST_MODEL,
+          messages,
+          temperature: options?.temperature ?? OPENAI_CONFIG.temperature,
+          max_tokens: options?.maxTokens ?? OPENAI_CONFIG.maxTokens,
+          response_format: { type: 'json_object' },
+        })
+      : await openai.chat.completions.create({
+          model: options?.model ?? FAST_MODEL,
+          messages,
+          temperature: options?.temperature ?? OPENAI_CONFIG.temperature,
+          max_tokens: options?.maxTokens ?? OPENAI_CONFIG.maxTokens,
+        })
     return response.choices[0]?.message?.content || null
   } catch (error) {
     console.error('[External Specialist] Error calling external specialist:', error)
