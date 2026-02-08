@@ -4,6 +4,9 @@ import { getAgents, getAgentById } from '@/lib/agents'
 import { DEEP_MODEL, DEEP_MODEL_MAX_TOKENS, OPENAI_CONFIG, getOpenAIApiKey } from '@/lib/config'
 import OpenAI from 'openai'
 
+// Allow up to 60 seconds for this function (deep analysis with multiple agents)
+export const maxDuration = 60
+
 interface MemberAnalysis {
   agentId: string
   agentName: string

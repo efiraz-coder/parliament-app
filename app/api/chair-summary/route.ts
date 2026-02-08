@@ -7,6 +7,9 @@ import OpenAI from 'openai'
 import { getExternalSpecialist } from '@/lib/external-specialists'
 import { getJewishInsightForSituation } from '@/lib/jewish-insight'
 
+// Allow up to 60 seconds for this function (multiple OpenAI calls)
+export const maxDuration = 60
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -107,20 +110,21 @@ export async function POST(request: NextRequest) {
       .slice(-4000)
 
     // בחינה אמיתית של מומחי תוכן: כשמגיעים לתשובה סופית – כל מומחה נותן ניתוח אמיתי בתחום שלו
+    // הערה: ב-Vercel Hobby plan יש timeout של 10 שניות – לכן נשתמש בניתוחי מומחים רק אם כבר יש ב-cache,
+    // אחרת נתן ליו"ר לייצר את כל התובנות בעצמו (הפרומפט מכיל את כל הפרסונות)
     let expertAnalysesText = ''
     const isFinalAnswer = futureGoalAnswered || currentPhase === 'final_response'
     if (isFinalAnswer) {
       try {
-        let analyses = getExpertContentAnalyses(sessionId)
-        if (!analyses || analyses.length === 0) {
-          const selectedIds = await selectRelevantExperts(conversationSummary)
-          analyses = await collectExpertContentAnalyses(sessionId, selectedIds ?? undefined)
-          setExpertContentAnalyses(sessionId, analyses)
-        }
-        if (analyses.length > 0) {
+        // First: check if we already have cached expert analyses (from a previous call or pre-fetch)
+        const cachedAnalyses = getExpertContentAnalyses(sessionId)
+        if (cachedAnalyses && cachedAnalyses.length > 0) {
           expertAnalysesText = '\n\n===== תשובות המומחים (ניתוח אמיתי מכל אסכולה) =====\n' +
-            analyses.map(a => `${a.schoolName} (${a.agentName}):\n${a.analysis}`).join('\n\n')
+            cachedAnalyses.map(a => `${a.schoolName} (${a.agentName}):\n${a.analysis}`).join('\n\n')
         }
+        // If no cached analyses, DON'T run the expensive multi-agent call here.
+        // The chair prompt already contains all expert personas and will generate expert insights directly.
+        // This saves 5+ API calls and prevents timeout on Vercel Hobby plan (10s limit).
       } catch (expertErr) {
         console.error('[Chair Summary] Expert analyses failed (continuing without):', expertErr)
         expertAnalysesText = ''

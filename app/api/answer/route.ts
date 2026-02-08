@@ -9,6 +9,9 @@ import { detectExternalDomain, getExternalDomainClarificationQuestion } from '@/
 import { getExternalSpecialist } from '@/lib/external-specialists'
 import { isFixedQuestionId, getNextFixedQuestionOrder, getFixedQuestionByOrder } from '@/lib/fixed-questions'
 
+// Allow up to 60 seconds for this function (expert proposal collection)
+export const maxDuration = 60
+
 export async function POST(request: NextRequest) {
   try {
     const body: AnswerRequest = await request.json()
