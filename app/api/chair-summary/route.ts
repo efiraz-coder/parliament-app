@@ -450,14 +450,14 @@ export async function POST(request: NextRequest) {
     const closingBlock = jewishQuote && jewishExplanation
       ? `ממקורות יהודיים${jewishSource ? ` (${jewishSource})` : ''}:\n${jewishQuote}\n\nההסבר המודרני:\n${jewishExplanation}`
       : (summaryData.closing || '')
-    const chairContent = isFinalResponse
+    const chairMessageText = isFinalResponse
       ? `${mechanismText}${voicesText}${leaningText}${understandingText}${stepsText}${resistanceText}${externalDomainText}${closingBlock}`.trim()
       : `${mechanismText}${voicesText}${leaningText}${understandingText}${stepsText}${resistanceText}${externalDomainText}`.trim()
     
     const chairMessage: ChatMessage = {
       speaker: 'chair',
       role: 'assistant',
-      content: chairContent,
+      content: chairMessageText,
       timestamp: new Date().toISOString()
     }
     addMessage(sessionId, chairMessage)
