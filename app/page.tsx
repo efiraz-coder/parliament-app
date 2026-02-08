@@ -618,12 +618,24 @@ export default function Home() {
                 <Sparkles className="w-7 h-7 text-amber-500" />
                 סיכום והמלצות
               </h3>
+
+              {/* Reference Card - השאלה המקורית */}
+              {chairSummary.summary.originalQuestion && (
+                <div className="mb-6 p-4 bg-indigo-50 rounded-lg border border-indigo-200 border-r-4 border-r-indigo-400">
+                  <h4 className="font-semibold text-indigo-700 mb-2 flex items-center gap-2 text-sm uppercase tracking-wide">
+                    השאלה שלך
+                  </h4>
+                  <p className="text-indigo-900 font-medium text-base leading-relaxed" style={{ fontFamily: 'Georgia, "Frank Ruhl Libre", serif' }}>
+                    &ldquo;{chairSummary.summary.originalQuestion}&rdquo;
+                  </p>
+                </div>
+              )}
               
               {/* Reflection Section - סיכום אמפתי */}
               {(chairSummary.summary.reflection || chairSummary.summary.information || chairSummary.summary.userFriendlyExplanation) && (
                 <div className="mb-6 p-5 bg-slate-50 rounded-lg border-l-4 border-l-slate-400 border border-slate-200">
                   <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2 text-lg">
-                    📋 מה שסיפרת
+                    מה שסיפרת
                   </h4>
                   <div 
                     className="text-slate-600 leading-relaxed prose prose-slate max-w-none"
@@ -645,7 +657,7 @@ export default function Home() {
                 return (
                   <div className="mb-6">
                     <h4 className="font-semibold text-slate-700 mb-4 flex items-center gap-2 text-lg">
-                      💡 זוויות מהפרלמנט
+                      זוויות מהפרלמנט
                     </h4>
                     {experts.length > 0 ? (
                       <div className="space-y-4">
@@ -706,7 +718,7 @@ export default function Home() {
                 return (
                   <div className="mb-6 p-5 bg-emerald-50 rounded-lg border-l-4 border-l-emerald-500 border border-emerald-100">
                     <h4 className="font-semibold text-slate-700 mb-5 flex items-center gap-2 text-lg">
-                      🎯 כלים לפעולה
+                      כלים לפעולה
                     </h4>
                     <ol className="space-y-6">
                       {plan.length > 0
@@ -765,6 +777,23 @@ export default function Home() {
                   </div>
                 )
               })()}
+
+              {/* Resistance Note - ניתוח התנגדות צפויה */}
+              {(chairSummary.summary.resistanceNote || chairSummary.summary.resistance) && (
+                <div className="mb-6 p-5 bg-orange-50 rounded-lg border border-orange-200 border-r-4 border-r-orange-400">
+                  <h4 className="font-semibold text-orange-800 mb-3 flex items-center gap-2 text-base">
+                    מה עלול להיות קשה
+                  </h4>
+                  <div
+                    className="text-orange-900/80 leading-relaxed"
+                    dangerouslySetInnerHTML={{
+                      __html: (chairSummary.summary.resistanceNote || chairSummary.summary.resistance || '')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong class="text-orange-900">$1</strong>')
+                        .replace(/\n/g, '<br/>'),
+                    }}
+                  />
+                </div>
+              )}
 
               <motion.button
                 onClick={handleNewSession}
