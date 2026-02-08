@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getMessages, addMessage, ChatMessage, countUserMessages, hasDontKnowPattern, getFutureGoalAnswered, getPhase, setPhase, getActiveExternalDomain, getExternalDomainState, setExpertContentAnalyses, getExpertContentAnalyses } from '@/lib/chat-state'
 import { collectExpertContentAnalyses, selectRelevantExperts } from '@/lib/expert-content-analysis'
 import { DEEP_MODEL, DEEP_MODEL_MAX_TOKENS, OPENAI_CONFIG, getOpenAIApiKey, CHAIR_PROMPTS, OPTIMIZATION_CONFIG, FAST_MODEL } from '@/lib/config'
-import { ChairSummaryResponse } from '@/lib/types'
+import { ChairSummaryResponse, SelectedExpert } from '@/lib/types'
 import OpenAI from 'openai'
 import { getExternalSpecialist } from '@/lib/external-specialists'
 import { getJewishInsightForSituation } from '@/lib/jewish-insight'
@@ -267,13 +267,10 @@ export async function POST(request: NextRequest) {
     
     // Detect if new format (has pattern_name or action_plan)
     const isNewFormat = rawData.pattern_name || rawData.action_plan
-    
-    // Selected expert type
-    interface SelectedExpert {
-      id: string
-      name: string
-      insight: string
-    }
+
+    const VALID_EXPERT_IDS: SelectedExpert['id'][] = ['psychodynamic', 'stoic', 'cbt', 'sociological', 'organizational', 'dbt']
+    const toExpertId = (s: unknown): SelectedExpert['id'] =>
+      typeof s === 'string' && VALID_EXPERT_IDS.includes(s as SelectedExpert['id']) ? s as SelectedExpert['id'] : 'cbt'
 
     // Normalize to a unified structure
     let summaryData: {
@@ -321,12 +318,12 @@ export async function POST(request: NextRequest) {
         }))
         .filter(step => step.title || step.description) // Remove empty steps
 
-      // Convert selected_experts to properly typed array
+      // Convert selected_experts to properly typed array (id must match SelectedExpert['id'])
       const typedSelectedExperts: SelectedExpert[] = Array.isArray(rawData.selected_experts)
         ? rawData.selected_experts
             .filter((e): e is SelectedExpertRaw => typeof e === 'object' && e !== null)
             .map(e => ({
-              id: e.id ?? 'unknown',
+              id: toExpertId(e.id),
               name: e.name ?? '',
               insight: e.insight ?? ''
             }))
@@ -464,7 +461,11 @@ export async function POST(request: NextRequest) {
         patternName: summaryData.patternName?.trim() || undefined,
         reflection: summaryData.reflection?.trim() || undefined, // סיכום אמפתי
         information: summaryData.information?.trim() || summaryData.reflection?.trim() || undefined, // fallback
-        selectedExperts: summaryData.selectedExperts || undefined, // 3 מומחים נבחרים
+        selectedExperts: summaryData.selectedExperts?.map(e => ({
+          id: toExpertId(e.id),
+          name: e.name,
+          insight: e.insight
+        })) ?? undefined, // 3 מומחים נבחרים (ensure id matches SelectedExpert['id'])
         userFriendlyExplanation: summaryData.userFriendlyExplanation?.trim() || undefined,
         actionPlan: summaryData.actionPlan || undefined,
         resistanceNote: summaryData.resistanceNote?.trim() || undefined,
