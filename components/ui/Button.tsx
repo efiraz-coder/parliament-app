@@ -1,29 +1,29 @@
 'use client'
 
-import { motion, HTMLMotionProps } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { forwardRef } from 'react'
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 
-interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref' | 'children'> {
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
   size?: 'sm' | 'md' | 'lg'
   isLoading?: boolean
-  leftIcon?: React.ReactNode
-  rightIcon?: React.ReactNode
-  children?: React.ReactNode
+  leftIcon?: ReactNode
+  rightIcon?: ReactNode
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ 
-    className, 
-    variant = 'primary', 
-    size = 'md', 
-    isLoading, 
-    leftIcon, 
-    rightIcon, 
+  ({
+    className,
+    variant = 'primary',
+    size = 'md',
+    isLoading,
+    leftIcon,
+    rightIcon,
     children,
     disabled,
-    ...props 
+    type = 'button',
+    ...props
   }, ref) => {
     const variants = {
       primary: 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:shadow-glow',
@@ -41,6 +41,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <motion.button
         ref={ref}
+        type={type}
         whileTap={{ scale: 0.95 }}
         whileHover={{ scale: 1.02 }}
         disabled={disabled || isLoading}
@@ -51,7 +52,6 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           sizes[size],
           className
         )}
-        {...props}
       >
         {isLoading ? (
           <motion.div
