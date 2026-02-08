@@ -628,7 +628,7 @@ export default function Home() {
                   <div 
                     className="text-slate-600 leading-relaxed prose prose-slate max-w-none"
                     dangerouslySetInnerHTML={{ 
-                      __html: (chairSummary.summary.reflection || chairSummary.summary.information || chairSummary.summary.userFriendlyExplanation)
+                      __html: (chairSummary.summary.reflection || chairSummary.summary.information || chairSummary.summary.userFriendlyExplanation || '')
                         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                         .replace(/\n/g, '<br/>') 
                     }}
